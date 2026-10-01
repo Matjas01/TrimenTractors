@@ -1,0 +1,522 @@
+{
+ "_readme": "Hand fixes applied on top of data/stock.json. type: key from TYPES in scripts/content.py. make/model: replace the scraped value (\"\" = none). title: full per-language title. specs: per-language value replacements. drop_specs: rows to hide. notes: dealer notes per language; notes_src is a hash of the English note they were translated from, so a changed note on the old site falls back to the scraped text.",
+ "hidden": [
+  1722,
+  3285
+ ],
+ "items": {
+  "3065": {
+   "notes": {
+    "en": "CAT GRADE 3D laser system.",
+    "de": "CAT GRADE 3D Lasersystem.",
+    "ru": "Лазерная система CAT GRADE 3D.",
+    "lv": "CAT GRADE 3D lāzera sistēma."
+   },
+   "notes_src": "055bef2175"
+  },
+  "3302": {
+   "notes": {
+    "en": "Last service by the dealer at 15,545 hours. CAT quick coupler, 4.8 m³ bucket, central greasing, rear view camera, Loadrite L2180 scales with LP950 printer, climate control, third hydraulic valve. Good working condition.",
+    "de": "Letzter Service beim Händler bei 15.545 Betriebsstunden. CAT-Schnellwechsler, Schaufel 4,8 m³, Zentralschmierung, Rückfahrkamera, Waage Loadrite L2180 mit Drucker LP950, Klimaanlage, dritter Hydraulikkreis. Guter Arbeitszustand.",
+    "ru": "Последнее ТО у дилера на 15 545 м/ч. Быстросъем CAT, ковш 4,8 м³, централизованная смазка, камера заднего вида, весы Loadrite L2180 с принтером LP950, климат-контроль, третья гидролиния. Хорошее рабочее состояние.",
+    "lv": "Pēdējā apkope pie dīlera pie 15 545 motorstundām. CAT ātrā sakabe, 4,8 m³ kauss, centrālā eļļošanas sistēma, atpakaļskata kamera, Loadrite L2180 svari ar LP950 printeri, klimata kontrole, trešā hidrauliskā līnija. Labā darba kārtībā."
+   },
+   "notes_src": "4503270449"
+  },
+  "3338": {
+   "notes": {
+    "en": "Bought new in 01/2026.",
+    "de": "Neu gekauft 01/2026.",
+    "ru": "Куплен новым в 01/2026.",
+    "lv": "Iegādāts jauns 01/2026."
+   },
+   "notes_src": "64bd50e30f"
+  },
+  "3300": {
+   "type": "soil_compactor",
+   "notes": {
+    "en": "Engine: John Deere 3179 DF.",
+    "de": "Motor: John Deere 3179 DF.",
+    "ru": "Двигатель John Deere 3179 DF.",
+    "lv": "Dzinējs: John Deere 3179 DF."
+   },
+   "notes_src": "528e57b62c"
+  },
+  "3130": {
+   "type": "tyre_roller"
+  },
+  "3177": {
+   "type": "compact_track_loader"
+  },
+  "3063": {
+   "type": "harvester"
+  },
+  "3053": {
+   "type": "crawler_dumper",
+   "notes": {
+    "en": "Morooka MST800 crawler dumper chassis with HIAB XS 055 CL crane. Payload 4,500 to 5,000 kg depending on use. Dimensions approx. 4500 × 2300 × 2300 mm (L × W × H), track width 600 mm. Engine: Cummins 6T-830, diesel. Crane capacity: 2,080 kg at 2.1 m, 1,200 kg at 3.6 m, 820 kg at 5.1 m, 600 kg at 6.9 m.",
+    "de": "Raupendumper-Fahrgestell Morooka MST800 mit Kran HIAB XS 055 CL. Nutzlast je nach Einsatz 4.500 bis 5.000 kg. Abmessungen ca. 4500 × 2300 × 2300 mm (L × B × H), Kettenbreite 600 mm. Motor: Cummins 6T-830, Diesel. Traglast des Krans: 2.080 kg bei 2,1 m, 1.200 kg bei 3,6 m, 820 kg bei 5,1 m, 600 kg bei 6,9 m.",
+    "ru": "Шасси гусеничного думпера Morooka MST800 с краном HIAB XS 055 CL. Грузоподъемность в зависимости от применения от 4 500 до 5 000 кг. Габариты прибл. 4500 × 2300 × 2300 мм (Д × Ш × В), ширина гусениц 600 мм. Двигатель Cummins 6T-830, дизель. Грузоподъемность крана: 2 080 кг на вылете 2,1 м, 1 200 кг на 3,6 м, 820 кг на 5,1 м, 600 кг на 6,9 м.",
+    "lv": "Kāpurķēžu pašizgāzēja šasija Morooka MST800 ar HIAB XS 055 CL manipulatoru. Kravnesība atkarībā no lietojuma no 4500 līdz 5000 kg. Izmēri apm. 4500 × 2300 × 2300 mm (G × P × A), kāpurķēžu platums 600 mm. Dzinējs Cummins 6T-830, dīzelis. Manipulatora celtspēja: 2080 kg pie 2,1 m, 1200 kg pie 3,6 m, 820 kg pie 5,1 m, 600 kg pie 6,9 m."
+   },
+   "notes_src": "db9c18040d"
+  },
+  "3347": {
+   "type": "seed_drill",
+   "model": "Avatar 12.25 SD",
+   "notes": {
+    "en": "",
+    "de": "",
+    "ru": "",
+    "lv": ""
+   },
+   "notes_src": "4d8a85db64"
+  },
+  "3314": {
+   "type": "land_roller",
+   "notes": {
+    "en": "Working width 8.3 m. Needs a tractor of 120 hp or more.",
+    "de": "Arbeitsbreite 8,3 m. Benötigte Traktorleistung ab 120 PS.",
+    "ru": "Рабочая ширина 8,3 м. Требуемая мощность трактора от 120 л.с.",
+    "lv": "Darba platums 8,3 m. Nepieciešamā traktora jauda no 120 ZS."
+   },
+   "notes_src": "0cf5b094c0"
+  },
+  "3313": {
+   "type": "fertiliser_spreader",
+   "notes": {
+    "en": "Twin-disc fertiliser spreader. Working width 10 to 42 m, hopper capacity 1,800 to 4,500 l, max. load 4,500 kg. For tractors of 140 to 200 hp.",
+    "de": "Zweischeiben-Düngerstreuer. Arbeitsbreite 10 bis 42 m, Behälterinhalt 1.800 bis 4.500 l, max. Zuladung 4.500 kg. Für Traktoren mit 140 bis 200 PS.",
+    "ru": "Двухдисковый разбрасыватель минеральных удобрений. Рабочая ширина от 10 до 42 м, объем бункера от 1 800 до 4 500 л, макс. загрузка 4 500 кг. Для тракторов мощностью от 140 до 200 л.с.",
+    "lv": "Divu disku minerālmēslu izkliedētājs. Darba platums no 10 līdz 42 m, ietilpība no 1800 līdz 4500 l, maksimālā kravnesība 4500 kg. Traktoram ar jaudu no 140 līdz 200 ZS."
+   },
+   "notes_src": "63cab21ee6"
+  },
+  "3271": {
+   "type": "combine",
+   "notes": {
+    "en": "Header 4850 mm.",
+    "de": "Schneidwerk 4850 mm.",
+    "ru": "Жатка 4850 мм.",
+    "lv": "Hederis 4850 mm."
+   },
+   "notes_src": "73065660a6"
+  },
+  "3161": {
+   "type": "floor_saw",
+   "model": "BFS1350CE",
+   "notes": {
+    "en": "Euro V engine, 03/2022.",
+    "de": "Motor Euro V, 03/2022.",
+    "ru": "Двигатель Euro V, 03/2022.",
+    "lv": "Dzinējs Euro V, 03/2022."
+   },
+   "notes_src": "00a1a24860"
+  },
+  "3281": {
+   "notes": {
+    "en": "I-Shift gearbox.",
+    "de": "I-Shift-Getriebe.",
+    "ru": "Коробка передач I-Shift.",
+    "lv": "I-Shift ātrumkārba."
+   },
+   "notes_src": "8f438b7c90"
+  },
+  "2795": {
+   "type": "tractor_reefer",
+   "notes": {
+    "en": "Sold together with a Schmitz SKO24 refrigerated semi-trailer from 2012. The truck has an I-Shift gearbox.",
+    "de": "Zusammen mit Kühlauflieger Schmitz SKO24, Baujahr 2012. Die Zugmaschine hat ein I-Shift-Getriebe.",
+    "ru": "Продается вместе с рефрижераторным полуприцепом Schmitz SKO24 2012 года. Коробка передач тягача I-Shift.",
+    "lv": "Pārdod kopā ar refrižeratora puspiekabi Schmitz SKO24, 2012. gads. Vilcējam ir I-Shift ātrumkārba."
+   },
+   "notes_src": "6c07857213",
+   "title": {
+    "en": "Volvo FH460 tractor unit with refrigerated trailer",
+    "de": "Sattelzugmaschine Volvo FH460 mit Kühlauflieger",
+    "ru": "Седельный тягач Volvo FH460 с рефрижератором",
+    "lv": "Vilcējs Volvo FH460 ar refrižeratora puspiekabi"
+   }
+  },
+  "3312": {
+   "notes": {
+    "en": "New engine fitted in 12/2024 at 169,351 km; 28,503 km driven on it since. Odometer reading 197,854 km. Meiller tipper body, 18 m³. Manual gearbox. Perfect condition.",
+    "de": "Neuer Motor im 12/2024 bei 169.351 km eingebaut, seitdem 28.503 km gefahren. Kilometerstand 197.854 km. Meiller-Kippaufbau, 18 m³. Schaltgetriebe. Perfekter Zustand.",
+    "ru": "В 12/2024 на пробеге 169 351 км установлен новый двигатель, с ним пройдено 28 503 км. Пробег по одометру 197 854 км. Кузов Meiller, 18 м³. Механическая коробка передач. Отличное состояние.",
+    "lv": "2024. gada decembrī pie 169 351 km uzstādīts jauns dzinējs, ar to nobraukti 28 503 km. Odometra rādījums 197 854 km. Meiller kravas kaste, 18 m³. Manuālā ātrumkārba. Perfektā stāvoklī."
+   },
+   "notes_src": "3cc5c199fc"
+  },
+  "3203": {
+   "type": "refuse_truck"
+  },
+  "3286": {
+   "type": "vibro_bucket",
+   "make": "",
+   "drop_specs": [
+    "Fraction"
+   ],
+   "notes": {
+    "en": "Hydraulically driven.",
+    "de": "Hydraulisch angetrieben.",
+    "ru": "С гидравлическим приводом.",
+    "lv": "Ar hidraulisko piedziņu."
+   }
+  },
+  "1727": {
+   "type": "mowing_bucket",
+   "condition": "new",
+   "notes": {
+    "en": "New, unused. Comes with an extra set of cutting knives.",
+    "de": "Neu, unbenutzt. Mit zusätzlichem Satz Schneidmesser.",
+    "ru": "Новый, не использовался. В комплекте дополнительный набор режущих ножей.",
+    "lv": "Jauns, nelietots. Komplektā papildu griešanas nažu komplekts."
+   },
+   "notes_src": "9e16f4dfe8"
+  },
+  "3249": {
+   "type": "skid_steer_bucket",
+   "model": ""
+  },
+  "3056": {
+   "type": "four_in_one_bucket",
+   "make": "",
+   "model": ""
+  },
+  "2876": {
+   "type": "high_tip_bucket",
+   "model": ""
+  },
+  "2875": {
+   "type": "high_tip_bucket",
+   "model": ""
+  },
+  "3362": {
+   "specs": {
+    "Hinges": "Small BM (old BM)"
+   }
+  },
+  "2752": {
+   "model": ""
+  },
+  "3309": {
+   "model": "",
+   "add_specs": {
+    "Machine weight": "Doosan DX340"
+   }
+  },
+  "3217": {
+   "model": ""
+  },
+  "3291": {
+   "model": ""
+  },
+  "3351": {
+   "model": ""
+  },
+  "3337": {
+   "model": ""
+  },
+  "3349": {
+   "notes": {
+    "en": "Mechanical quick coupler.",
+    "de": "Mechanischer Schnellwechsler.",
+    "ru": "Механический быстросъем.",
+    "lv": "Mehāniskā ātrā sakabe."
+   },
+   "notes_src": "0f2dcda5fb"
+  },
+  "3275": {
+   "notes": {
+    "en": "Hydraulic quick coupler.",
+    "de": "Hydraulischer Schnellwechsler.",
+    "ru": "Гидравлический быстросъем.",
+    "lv": "Hidrauliskā ātrā sakabe."
+   },
+   "notes_src": "cfb074b8d0",
+   "specs": {
+    "Stick": {
+     "en": "310 or 280 mm",
+     "de": "310 oder 280 mm",
+     "ru": "310 или 280 мм",
+     "lv": "310 vai 280 mm"
+    }
+   }
+  },
+  "2976": {
+   "notes": {
+    "en": "Hydraulic quick coupler.",
+    "de": "Hydraulischer Schnellwechsler.",
+    "ru": "Гидравлический быстросъем.",
+    "lv": "Hidrauliskā ātrā sakabe."
+   },
+   "notes_src": "cfb074b8d0"
+  },
+  "2783": {
+   "notes": {
+    "en": "Hydraulic quick coupler.",
+    "de": "Hydraulischer Schnellwechsler.",
+    "ru": "Гидравлический быстросъем.",
+    "lv": "Hidrauliskā ātrā sakabe."
+   },
+   "notes_src": "cfb074b8d0"
+  },
+  "2954": {
+   "make": "",
+   "model": "",
+   "notes": {
+    "en": "Hydraulic quick coupler.",
+    "de": "Hydraulischer Schnellwechsler.",
+    "ru": "Гидравлический быстросъем.",
+    "lv": "Hidrauliskā ātrā sakabe."
+   },
+   "notes_src": "cfb074b8d0"
+  },
+  "3224": {
+   "type": "hammer_bracket",
+   "make": "",
+   "model": "",
+   "title": {
+    "en": "Hammer mounting bracket for Komatsu PC800",
+    "de": "Hammeradapter für Komatsu PC800",
+    "ru": "Адаптер гидромолота для Komatsu PC800",
+    "lv": "Hidroāmura adapteris Komatsu PC800"
+   },
+   "notes": {
+    "en": "Drill pattern to fit a Furukawa F100 hydraulic breaker.",
+    "de": "Lochbild passend für den Hydraulikhammer Furukawa F100.",
+    "ru": "Отверстия под гидромолот Furukawa F100.",
+    "lv": "Urbumu izvietojums der Furukawa F100 hidroāmuram."
+   },
+   "notes_src": "25b152a62e"
+  },
+  "3033": {
+   "make": "",
+   "model": "",
+   "notes": {
+    "en": "Mechanical / hydraulic.",
+    "de": "Mechanisch / hydraulisch.",
+    "ru": "Механический / гидравлический.",
+    "lv": "Mehāniskā / hidrauliskā."
+   },
+   "notes_src": "70f740fbfb"
+  },
+  "2689": {
+   "notes": {
+    "en": "Quick coupler with rotation.",
+    "de": "Schnellwechsler mit Rotation.",
+    "ru": "Быстросъем с ротатором.",
+    "lv": "Ātrā sakabe ar rotāciju."
+   },
+   "notes_src": "de14e0162b"
+  },
+  "2620": {
+   "notes": {
+    "en": "Fits CAT 315B, 315C, 316E, 317, 317B, 318E.",
+    "de": "Passend für CAT 315B, 315C, 316E, 317, 317B, 318E.",
+    "ru": "Подходит для CAT 315B, 315C, 316E, 317, 317B, 318E.",
+    "lv": "Der CAT 315B, 315C, 316E, 317, 317B, 318E."
+   },
+   "notes_src": "de15dcbbf4"
+  },
+  "2837": {
+   "specs": {
+    "Hinges": {
+     "en": "CW40, hydraulic",
+     "de": "CW40, hydraulisch",
+     "ru": "CW40, гидравлический",
+     "lv": "CW40, hidrauliskā"
+    }
+   }
+  },
+  "2784": {
+   "type": "coupler_adapter",
+   "make": "",
+   "model": "",
+   "specs": {
+    "Hinges": {
+     "en": "Large BM to L150–L220",
+     "de": "Large BM auf L150–L220",
+     "ru": "Large BM на L150–L220",
+     "lv": "Large BM uz L150–L220"
+    }
+   }
+  },
+  "1615": {
+   "make": "",
+   "title": {
+    "en": "Quick coupler, pin diameter 65 mm",
+    "de": "Schnellwechsler, Bolzen 65 mm",
+    "ru": "Быстросъем, диаметр пальца 65 мм",
+    "lv": "Ātrā sakabe, tapas diametrs 65 mm"
+   }
+  },
+  "3346": {
+   "type": "angle_broom",
+   "model": ""
+  },
+  "3330": {
+   "type": "pulverizer",
+   "notes": {
+    "en": "Carrier weight class 22 to 27 t. Service weight 2,600 kg (2,360 kg without adapter). Operating pressure 350 bar, oil flow 150 to 250 l/min. Max. cutting force 290 t, crushing force at the jaw tip 90 t, max. jaw opening 875 mm.",
+    "de": "Trägergeräteklasse 22 bis 27 t. Dienstgewicht 2.600 kg (2.360 kg ohne Adapter). Betriebsdruck 350 bar, Ölmenge 150 bis 250 l/min. Max. Schneidkraft 290 t, Brechkraft an der Backenspitze 90 t, max. Maulöffnung 875 mm.",
+    "ru": "Для базовых машин массой от 22 до 27 т. Рабочая масса 2 600 кг (2 360 кг без адаптера). Рабочее давление 350 бар, расход масла от 150 до 250 л/мин. Макс. усилие резания 290 т, усилие дробления на конце челюсти 90 т, макс. раскрытие челюстей 875 мм.",
+    "lv": "Bāzes mašīnas svara klase no 22 līdz 27 t. Darba svars 2600 kg (2360 kg bez adaptera). Darba spiediens 350 bar, eļļas plūsma no 150 līdz 250 l/min. Maks. griešanas spēks 290 t, drupināšanas spēks žokļu galā 90 t, maks. žokļu atvērums 875 mm."
+   },
+   "notes_src": "2e673441dc",
+   "no_size": true
+  },
+  "3329": {
+   "type": "hammer",
+   "drop_specs": [
+    "Machine weight"
+   ],
+   "notes": {
+    "en": "Operating weight with tool 390 kg. Energy class 1085 J. Carriers: 5 to 9 t mini excavators, Cat 216 to 299 skid steer and compact track loaders, Cat 415 to 444 backhoe loaders. Tool diameter 68 mm, impact rate 720 to 1740 blows/min, minimum operating pressure 100 bar, minimum carrier weight 2,994 kg, oil flow 40 to 115 l/min. Dimensions 346 × 451 × 1324 mm (W × L × H), height without tool 953 mm. Sound level 124 dB.",
+    "de": "Einsatzgewicht mit Werkzeug 390 kg. Schlagenergieklasse 1085 J. Trägergeräte: Minibagger 5 bis 9 t, Cat Kompakt- und Kompaktraupenlader 216 bis 299, Cat Baggerlader 415 bis 444. Meißeldurchmesser 68 mm, Schlagzahl 720 bis 1740 pro Minute, min. Betriebsdruck 100 bar, min. Trägergewicht 2.994 kg, Ölmenge 40 bis 115 l/min. Abmessungen 346 × 451 × 1324 mm (B × L × H), Höhe ohne Werkzeug 953 mm. Schallpegel 124 dB.",
+    "ru": "Рабочая масса с инструментом 390 кг. Класс энергии удара 1085 Дж. Базовые машины: мини-экскаваторы от 5 до 9 т, мини-погрузчики Cat 216–299, экскаваторы-погрузчики Cat 415–444. Диаметр пики 68 мм, частота ударов от 720 до 1740 в минуту, мин. рабочее давление 100 бар, мин. масса базовой машины 2 994 кг, расход масла от 40 до 115 л/мин. Габариты 346 × 451 × 1324 мм (Ш × Д × В), высота без инструмента 953 мм. Уровень шума 124 дБ.",
+    "lv": "Darba svars ar instrumentu 390 kg. Trieciena enerģijas klase 1085 J. Bāzes mašīnas: mini ekskavatori no 5 līdz 9 t, Cat kompaktiekrāvēji 216–299, Cat ekskavatori-iekrāvēji 415–444. Instrumenta diametrs 68 mm, triecienu biežums no 720 līdz 1740 minūtē, min. darba spiediens 100 bar, min. bāzes mašīnas svars 2994 kg, eļļas plūsma no 40 līdz 115 l/min. Izmēri 346 × 451 × 1324 mm (P × G × A), augstums bez instrumenta 953 mm. Trokšņa līmenis 124 dB."
+   },
+   "notes_src": "6e3c8e5f23"
+  },
+  "3316": {
+   "type": "demolition_crusher",
+   "notes": {
+    "en": "Very good working order.",
+    "de": "Sehr guter Arbeitszustand.",
+    "ru": "В очень хорошем рабочем состоянии.",
+    "lv": "Ļoti labā darba kārtībā."
+   },
+   "notes_src": "a0eece84a5"
+  },
+  "3297": {
+   "type": "clamshell",
+   "make": "Thumm",
+   "model": "705HZ-4D"
+  },
+  "3146": {
+   "type": "hydraulic_clamp",
+   "notes": {
+    "en": "Hydraulic clamp for the NTP10 / B20 quick coupler. A bucket with NTP10 / B20 mounting can be locked mechanically under the clamp.",
+    "de": "Hydraulische Klammer für den Schnellwechsler NTP10 / B20. Unter der Klammer lässt sich ein Löffel mit Aufnahme NTP10 / B20 mechanisch verriegeln.",
+    "ru": "Гидравлический захват для быстросъема NTP10 / B20. Снизу на механическом замке крепится ковш с креплением NTP10 / B20.",
+    "lv": "Hidrauliskais satvērējs NTP10 / B20 ātrajai sakabei. Satvērēja apakšdaļai ar mehānisku fiksāciju var pievienot NTP10 / B20 kausu."
+   },
+   "notes_src": "b5c946c932"
+  },
+  "2836": {
+   "type": "bale_clamp",
+   "make": "",
+   "model": ""
+  },
+  "2746": {
+   "type": "clamshell"
+  },
+  "2594": {
+   "type": "screening_bucket",
+   "model": "MB-S18 S4"
+  },
+  "2593": {
+   "type": "crusher_bucket"
+  },
+  "2592": {
+   "type": "grapple"
+  },
+  "3336": {
+   "type": "ripper",
+   "make": "",
+   "model": ""
+  },
+  "3299": {
+   "type": "pallet_forks",
+   "no_size": true,
+   "notes": {
+    "en": "Hydraulically extendable pallet forks with frame.",
+    "de": "Hydraulisch ausziehbare Palettengabel mit Rahmen.",
+    "ru": "Гидравлически раздвижные вилы с рамой.",
+    "lv": "Hidrauliski izbīdāmas palešu dakšas ar rāmi."
+   },
+   "notes_src": "90fe351a3e"
+  },
+  "3292": {
+   "type": "rear_blade",
+   "drop_specs": [
+    "Machine weight"
+   ],
+   "notes": {
+    "en": "For tractors of 20 to 35 hp.",
+    "de": "Für Traktoren mit 20 bis 35 PS.",
+    "ru": "Для тракторов мощностью от 20 до 35 л.с.",
+    "lv": "Traktoriem ar jaudu no 20 līdz 35 ZS."
+   }
+  },
+  "3278": {
+   "type": "ripper"
+  },
+  "3274": {
+   "type": "fork_tines",
+   "model": "",
+   "size_key": "Lenght"
+  },
+  "3273": {
+   "type": "fork_tines",
+   "model": "",
+   "size_key": "Lenght"
+  },
+  "3272": {
+   "type": "fork_tines",
+   "model": "",
+   "size_key": "Lenght"
+  },
+  "3257": {
+   "type": "snow_plough",
+   "model": "SVV-2500",
+   "no_size": true
+  },
+  "3256": {
+   "type": "ripper"
+  },
+  "3181": {
+   "type": "angle_blade",
+   "model": "177-1990",
+   "notes": {
+    "en": "Width 2134 mm, fully angled 1948 mm, max. blade angle 30° left and right. Height 615 mm. Cutting edge 2197 × 15 mm. Weight 338 kg. Oil flow 42 to 86 l/min, pressure 145 to 235 bar. Skid steer coupler.",
+    "de": "Breite 2134 mm, voll geschwenkt 1948 mm, max. Schwenkwinkel 30° links und rechts. Höhe 615 mm. Schneidkante 2197 × 15 mm. Gewicht 338 kg. Ölmenge 42 bis 86 l/min, Druck 145 bis 235 bar. Aufnahme für Kompaktlader.",
+    "ru": "Ширина 2134 мм, при полном повороте 1948 мм, макс. угол поворота 30° влево и вправо. Высота 615 мм. Режущая кромка 2197 × 15 мм. Масса 338 кг. Расход масла от 42 до 86 л/мин, давление от 145 до 235 бар. Крепление для мини-погрузчика.",
+    "lv": "Platums 2134 mm, pilnībā pagriezta 1948 mm, maks. pagrieziena leņķis 30° pa kreisi un pa labi. Augstums 615 mm. Griezējmala 2197 × 15 mm. Svars 338 kg. Eļļas plūsma no 42 līdz 86 l/min, spiediens no 145 līdz 235 bar. Kompaktiekrāvēja sakabe."
+   },
+   "notes_src": "f3b22ea5d2"
+  },
+  "3128": {
+   "type": "snow_plough"
+  },
+  "3124": {
+   "type": "snow_plough"
+  },
+  "3113": {
+   "type": "snow_plough"
+  },
+  "2877": {
+   "type": "fork_jib"
+  },
+  "2811": {
+   "type": "tow_hook",
+   "model": "D5"
+  },
+  "2810": {
+   "type": "tow_hook",
+   "model": "D6"
+  },
+  "3253": {
+   "drop_specs": [
+    "Pin hole"
+   ],
+   "notes": {
+    "en": "GJ-500 quick-release clamp: inner width 507 mm, inner length 350 mm, tube diameter 130 mm.",
+    "de": "Schnellkupplung GJ-500: Innenbreite 507 mm, Innenlänge 350 mm, Rohrdurchmesser 130 mm.",
+    "ru": "Быстроразъемный зажим GJ-500: внутренняя ширина 507 мм, внутренняя длина 350 мм, диаметр трубы 130 мм.",
+    "lv": "GJ-500 ātrās atvienošanas skava: iekšējais platums 507 mm, iekšējais garums 350 mm, caurules diametrs 130 mm."
+   }
+  }
+ }
+}
