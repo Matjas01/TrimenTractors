@@ -57,6 +57,22 @@ python -m http.server 8000
 
 Then open http://localhost:8000/en/.
 
+## Offers section and request form
+
+The "Current offers" section on the home page and the rotating offer in the header photo show machines and trucks with a price and photos. Choose which ones come first in `data/overrides.json`:
+
+```json
+"featured": [3338, 3302, 3065]
+```
+
+The rest are filled in from the newest listings. To show a reduced price, give the item its earlier price; the listing then gets a "Reduced" badge and the old price struck through:
+
+```json
+"3302": {"was_price": 49500}
+```
+
+The "Send a request" form opens the visitor's email app with the message addressed to the salesperson who handles most listings of that kind (machinery and trucks, or work tools). A shared address such as info@ can replace this in `request_to` in `scripts/build.py`.
+
 ## Notes
 
 * Photos are loaded from `trimentractors.com/upload/...`. Copy them to the new host before the old server is switched off.

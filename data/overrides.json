@@ -1,5 +1,5 @@
 {
- "_readme": "Hand fixes applied on top of data/stock.json. type: key from TYPES in scripts/content.py. make/model: replace the scraped value (\"\" = none). title: full per-language title. specs: per-language value replacements. drop_specs: rows to hide. notes: dealer notes per language; notes_src is a hash of the English note they were translated from, so a changed note on the old site falls back to the scraped text.",
+ "_readme": "Hand fixes applied on top of data/stock.json. type: key from TYPES in scripts/content.py. make/model: replace the scraped value (\"\" = none). title: full per-language title. specs: per-language value replacements. drop_specs: rows to hide. notes: dealer notes per language; notes_src is a hash of the English note they were translated from, so a changed note on the old site falls back to the scraped text. featured: listing ids shown first in the offers section. was_price (per item): earlier price, shows a \"Reduced\" badge.",
  "hidden": [
   1722,
   3285
@@ -518,5 +518,15 @@
     "lv": "GJ-500 ātrās atvienošanas skava: iekšējais platums 507 mm, iekšējais garums 350 mm, caurules diametrs 130 mm."
    }
   }
- }
+ },
+ "featured": [
+  3338,
+  3302,
+  3065,
+  3318,
+  3312,
+  3177,
+  3063,
+  3053
+ ]
 }

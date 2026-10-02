@@ -7,6 +7,7 @@ Output goes to the repository root (en/, de/, ru/, lv/, index.html, sitemap.xml 
 which is what GitHub Pages serves.
 """
 import argparse
+import collections
 import datetime
 import hashlib
 import html
@@ -29,6 +30,7 @@ NBSP = " "
 # Photos from the old site's About page, picked by file name.
 HERO_MAIN, HERO_SIDE = "DSC_1049", ["2016-03-04-10-07-46", "20200525_171056"]
 TOOLS_PHOTO, YARD_PHOTO, ABOUT_PHOTO = "IMG_2889", "V2lHUK2749_22", "m3kmYpYVIK_23"
+HERO_BG = "https://www.trimentractors.com/img/background/DSC_0085.JPG"
 ABOUT_GALLERY = ["DSC_1049", "DSC01197", "2016-03-04-10-07-46", "DSC09227", "IMG_2742", "IMG_2889",
                  "20200525_171056", "DSC_0100", "DSC_0295", "DSC_0357", "DSC_1024", "DSC_6982"]
 
@@ -45,6 +47,41 @@ CYR = dict(zip("абвгдеёжзийклмнопрстуфхцчшщъыьэю
 
 
 # ---------------------------------------------------------------- helpers
+
+
+# Line icons, 24x24, drawn with the current text colour.
+ICONS = {
+    "phone": '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>',
+    "mail": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/>',
+    "calendar": '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+    "clock": '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    "weight": '<path d="M5.5 20.5 7.5 9.5h9l2 11z"/><circle cx="12" cy="6" r="2.5"/>',
+    "bolt": '<path d="M13 2.5 5.5 13.5h6l-1 8 8-11h-6z"/>',
+    "gauge": '<path d="M4 16.5a8 8 0 1 1 16 0"/><path d="m12 16.5 4-5"/>',
+    "ruler": '<rect x="2.5" y="8" width="19" height="8" rx="1"/><path d="M6.5 8v3M10.5 8v4M14.5 8v3M18.5 8v4"/>',
+    "link": '<rect x="2.5" y="9" width="10" height="6" rx="3"/><rect x="11.5" y="9" width="10" height="6" rx="3"/>',
+    "box": '<path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>',
+    "camera": '<rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="m8.5 7 1.5-2.5h4L15.5 7"/>',
+    "tag": '<path d="M3.5 12.5v-8a1 1 0 0 1 1-1h8l8 8-9 9z"/><circle cx="8" cy="8" r="1.5"/>',
+    "globe": '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.8 2.6 2.8 14.4 0 17M12 3.5c-2.8 2.6-2.8 14.4 0 17"/>',
+    "stack": '<path d="m12 3.5 8.5 4.5-8.5 4.5L3.5 8z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/>',
+    "check": '<circle cx="12" cy="12" r="8.5"/><path d="m8 12.5 2.8 2.8L16.5 9.5"/>',
+    "circle": '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/>',
+    "arrow": '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    "left": '<path d="m15 6-6 6 6 6"/>',
+    "right": '<path d="m9 6 6 6-6 6"/>',
+    "search": '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+    "pin": '<path d="M12 21s-6.5-6-6.5-11.5a6.5 6.5 0 0 1 13 0C18.5 15 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/>',
+    "menu": '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    "print": '<path d="M7 8V3.5h10V8"/><rect x="3.5" y="8" width="17" height="8" rx="1.5"/><path d="M7 13.5h10v7H7z"/>',
+}
+FACT_ICONS = {"Year": "calendar", "Motor hours": "clock", "KM": "gauge", "Weight": "weight", "Power": "bolt",
+              "Hinges": "link", "Width": "ruler", "Pin hole": "circle", "Capacity": "box", "Machine weight": "check"}
+
+
+def icon(name):
+    return ('<svg class="i" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" fill="none" '
+            f'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>')
 
 def esc(s):
     return html.escape(str(s), quote=True)
@@ -203,6 +240,17 @@ class Site:
         for it in self.items:
             self.by_cat.setdefault(it["cat"], []).append(it)
         self.cats_with_items = [cid for cid in self.ordered_cats() if cid in self.by_cat]
+        by_id = {it["id"]: it for it in self.items}
+        sellable = lambda it: it["group"] != 2 and it["price"] and it["images"]
+        pinned = [by_id[i] for i in self.ovr.get("featured", []) if i in by_id and sellable(by_id[i])]
+        rest = [it for it in sorted(self.items, key=lambda x: x["rank"]) if sellable(it) and it not in pinned]
+        self.featured = (pinned + rest)[:8]
+        # The request form goes to whoever handles most listings of that kind.
+        self.request_to = {}
+        for key, groups in (("m", (0, 1)), ("t", (2,))):
+            mails = collections.Counter(it["contact"]["email"] for it in self.items
+                                        if it["group"] in groups and it["contact"])
+            self.request_to[key] = mails.most_common(1)[0][0] if mails else ""
 
     # ---- categories
 
@@ -301,6 +349,7 @@ class Site:
             "width_mm": int(width_mm) if width_mm else None, "size": width,
             "hours": num("Motor hours"), "km": num("KM"),
             "images": raw["images"], "contact": raw["contact"], "condition": o.get("condition"),
+            "was_price": o.get("was_price"),
             "title_override": o.get("title"),
             "notes": {l: self.note(raw, o, l) for l in LANGS},
             "card": {}, "full": {}, "slug": {}, "path": {},
@@ -509,12 +558,12 @@ class Site:
         s = it["specs"]
         if it["kind"] != "tool":
             keys = [k for k in ("Motor hours", "KM", "Weight", "Power") if k in s or (k == "Power" and ("KW" in s or "HP" in s))]
-            facts = [(SPECS["Year"][lang], it["year"])] if it["year"] else []
+            facts = [("Year", SPECS["Year"][lang], it["year"])] if it["year"] else []
         else:
             keys = [k for k in ("Hinges", "Width", "Pin hole", "Capacity", "Weight", "Machine weight") if k in s]
             facts = []
-        facts += [(SPECS[k][lang], self.spec_value(it, k, lang)) for k in keys]
-        return facts[:5]
+        facts += [(k, SPECS[k][lang], self.spec_value(it, k, lang)) for k in keys]
+        return facts[:6]
 
     def card_meta(self, it, lang):
         if it["kind"] != "tool":
@@ -579,32 +628,35 @@ class Renderer:
         image = og_image or img(s.photo(HERO_MAIN))
         tags += [
             f'<meta property="og:type" content="{og_type}">',
-            f'<meta property="og:site_name" content="Trimen Tractors">',
+            '<meta property="og:site_name" content="Trimen Tractors">',
             f'<meta property="og:title" content="{esc(title.replace(" | Trimen Tractors", ""))}">',
             f'<meta property="og:description" content="{esc(desc)}">',
             f'<meta property="og:url" content="{esc(canonical)}">',
             f'<meta property="og:image" content="{esc(image)}">',
             f'<meta property="og:locale" content="{OG_LOCALE[lang]}">',
             '<meta name="twitter:card" content="summary_large_image">',
+            '<meta name="theme-color" content="#182025">',
             f'<link rel="icon" href="{rel(cur, "assets/favicon.ico")}" sizes="16x16">',
             f'<link rel="apple-touch-icon" href="{rel(cur, "assets/apple-touch-icon.png")}">',
             '<link rel="preconnect" href="https://fonts.googleapis.com">',
             '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
-            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@500;600&family=Fira+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">',
+            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@500;600;700&family=Fira+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">',
             f'<link rel="stylesheet" href="{rel(cur, "assets/site.css")}">',
             "<script>document.documentElement.classList.add('js')</script>",
         ]
         tags += [jsonld(x) for x in ld]
         return "\n".join(tags)
 
+    def contact_href(self, lang, cur):
+        return rel(cur, self.s.page_path("about", lang)) + "#contact"
+
     def header(self, lang, cur, alternates, active):
         s = self.s
         counts = {g: sum(1 for it in s.items if it["group"] == g) for g in GROUPS}
         nav = []
         for g in GROUPS:
-            path = s.group_path(g, lang)
             here = ' aria-current="page"' if active == ("group", g) else ""
-            nav.append(f'<li><a href="{rel(cur, path)}"{here}>{esc(GROUPS[g]["name"][lang])}'
+            nav.append(f'<li><a href="{rel(cur, s.group_path(g, lang))}"{here}>{esc(GROUPS[g]["name"][lang])}'
                        f' <span class="n">{counts[g]}</span></a></li>')
         for page, key in (("stock", "nav_stock"), ("about", "nav_about")):
             here = ' aria-current="page"' if active == page else ""
@@ -615,14 +667,17 @@ class Renderer:
         phone = COMPANY["phone"]
         return f"""<a class="skip" href="#main">{esc(t(lang, "skip"))}</a>
 <div class="topbar"><div class="wrap topbar-in">
-<span class="where">{esc(t(lang, "address_short"))}</span>
-<a class="tel" href="tel:{phone.replace(" ", "")}">{esc(phone)}</a>
+<span class="where">{icon("pin")}{esc(t(lang, "address_short"))}</span>
+<a class="tel" href="tel:{phone.replace(" ", "")}">{icon("phone")}{esc(phone)}</a>
 <nav class="langs" aria-label="Language">{langs}</nav>
 </div></div>
-<header class="header"><div class="wrap header-in">
+<header class="header" data-header><div class="wrap header-in">
 <a class="logo" href="{rel(cur, s.home_path(lang))}"><img src="{rel(cur, "assets/logo.png")}" alt="Trimen Tractors" width="147" height="58"></a>
-<button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav">{esc(t(lang, "menu"))}</button>
 <nav id="nav" class="nav" aria-label="Main"><ul>{"".join(nav)}</ul></nav>
+<div class="header-cta">
+<a class="btn btn-sm" href="{self.contact_href(lang, cur)}" data-request>{icon("mail")}<span>{esc(t(lang, "cta_btn"))}</span></a>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="{esc(t(lang, "menu"))}">{icon("menu")}</button>
+</div>
 </div></header>"""
 
     def footer(self, lang, cur):
@@ -630,27 +685,56 @@ class Renderer:
         groups = "".join(f'<li><a href="{rel(cur, s.group_path(g, lang))}">{esc(GROUPS[g]["name"][lang])}</a></li>'
                          for g in GROUPS)
         cats = "".join(f'<li><a href="{rel(cur, s.cat_path(c, lang))}">{esc(s.cat(c, "name", lang))}</a></li>'
-                       for c in s.cats_with_items[:8])
+                       for c in sorted(s.cats_with_items, key=lambda c: -len(s.by_cat[c]))[:6])
         langs = " ".join(f'<a href="{rel(cur, s.home_path(l))}" hreflang="{l}" lang="{l}">{LANG_NAMES[l]}</a>'
                          for l in LANGS)
         phone = COMPANY["phone"]
+        team = "".join(f'<li>{esc(p["name"])}<br><a href="tel:{p["phone"].replace(" ", "")}">{esc(p["phone"])}</a></li>'
+                       for p in s.team)
         return f"""<footer class="footer"><div class="wrap">
 <div class="footer-grid">
-<div><p class="f-name">{COMPANY["legal"]}</p>
-<p>{esc(COMPANY["street"])}<br>{COMPANY["parish"]}, {COMPANY["municipality"]}<br>{COMPANY["postcode"]}, {COUNTRY[lang]}</p>
-<p><a href="tel:{phone.replace(" ", "")}">{phone}</a></p></div>
+<div class="f-company">
+<img class="f-logo" src="{rel(cur, "assets/logo.png")}" alt="Trimen Tractors" width="147" height="58" loading="lazy">
+<p>{COMPANY["legal"]}<br>{esc(COMPANY["street"])}<br>{COMPANY["parish"]}, {COMPANY["municipality"]}<br>{COMPANY["postcode"]}, {COUNTRY[lang]}</p>
+<p><a class="f-phone" href="tel:{phone.replace(" ", "")}">{icon("phone")}{phone}</a></p></div>
 <div><p class="f-head">{esc(t(lang, "categories"))}</p><ul>{groups}{cats}</ul></div>
+<div><p class="f-head">{esc(t(lang, "team_h2"))}</p><ul class="f-team">{team}</ul></div>
 <div><p class="f-head">Trimen Tractors</p><ul>
 <li><a href="{rel(cur, s.page_path("stock", lang))}">{esc(t(lang, "nav_stock"))}</a></li>
 <li><a href="{rel(cur, s.page_path("about", lang))}">{esc(t(lang, "nav_about"))}</a></li>
-<li><a href="{rel(cur, s.page_path("about", lang))}#contact">{esc(t(lang, "nav_contact"))}</a></li>
+<li><a href="{self.contact_href(lang, cur)}">{esc(t(lang, "nav_contact"))}</a></li>
 <li><a href="{COMPANY["facebook"]}" rel="noopener">Facebook</a></li>
 <li><a href="https://www.vuwtc.com" rel="noopener">{esc(t(lang, "verachtert"))}</a></li>
 </ul></div>
 </div>
-<p class="f-langs">{langs}</p>
-<p class="f-small">{esc(t(lang, "footer_vat"))} © {s.year} {COMPANY["legal"]}</p>
+<div class="f-bottom"><p class="f-langs">{icon("globe")}{langs}</p>
+<p class="f-small">{esc(t(lang, "footer_vat"))} © {s.year} {COMPANY["legal"]}</p></div>
 </div></footer>"""
+
+    def cta_band(self, lang, cur):
+        phone = COMPANY["phone"]
+        return f"""<section class="cta-band"><div class="wrap cta-in" data-reveal>
+<div class="cta-text"><h2>{esc(t(lang, "cta_h2"))}</h2><p>{esc(t(lang, "cta_p"))}</p></div>
+<div class="cta-actions">
+<a class="btn btn-light btn-lg" href="{self.contact_href(lang, cur)}" data-request>{icon("mail")}{esc(t(lang, "cta_btn"))}</a>
+<a class="btn btn-outline btn-lg" href="tel:{phone.replace(" ", "")}">{icon("phone")}{phone}</a>
+</div></div></section>"""
+
+    def request_dialog(self, lang, topic):
+        s = self.s
+        config = {"m": s.request_to["m"], "t": s.request_to["t"], "subject": t(lang, "req_subject")}
+        sel = lambda v: " selected" if v == topic else ""
+        return f"""<dialog class="request" data-request-dialog data-config="{esc(json.dumps(config, ensure_ascii=False))}" aria-labelledby="req-h">
+<form method="dialog" class="request-form">
+<h2 id="req-h">{esc(t(lang, "cta_btn"))}</h2>
+<label>{esc(t(lang, "req_topic"))}<select name="topic"><option value="m"{sel("m")}>{esc(t(lang, "req_topic_m"))}</option><option value="t"{sel("t")}>{esc(t(lang, "req_topic_t"))}</option></select></label>
+<label>{esc(t(lang, "req_what"))}<textarea name="what" rows="4" required></textarea></label>
+<div class="req-row"><label>{esc(t(lang, "req_name"))}<input name="name" autocomplete="name"></label>
+<label>{esc(t(lang, "req_contact"))}<input name="contact" required></label></div>
+<p class="req-note">{esc(t(lang, "req_note"))}</p>
+<div class="req-actions"><button class="btn" value="send">{icon("mail")}{esc(t(lang, "req_send"))}</button>
+<button class="btn btn-alt" value="cancel" formnovalidate>{esc(t(lang, "close"))}</button></div>
+</form></dialog>"""
 
     def breadcrumbs(self, lang, cur, trail):
         """trail: list of (name, path); last is the current page."""
@@ -667,7 +751,7 @@ class Renderer:
         return f'<nav class="crumbs" aria-label="Breadcrumb"><ol>{"".join(lis)}</ol></nav>', ld
 
     def write(self, lang, path, title, desc, body, alternates, active=None, og_type="website", og_image=None, ld=(),
-              sitemap=True, page_class=""):
+              sitemap=True, page_class="", cta=True, topic="m", extra=""):
         cur = path
         doc = f"""<!doctype html>
 <html lang="{lang}">
@@ -678,8 +762,11 @@ class Renderer:
 {self.header(lang, cur, alternates, active)}
 <main id="main">
 {body}
+{self.cta_band(lang, cur) if cta else ""}
 </main>
 {self.footer(lang, cur)}
+{extra}
+{self.request_dialog(lang, topic)}
 <script src="{rel(cur, "assets/site.js")}" defer></script>
 </body>
 </html>
@@ -692,35 +779,91 @@ class Renderer:
 
     # ---- pieces
 
+    def price_html(self, it, lang, tag="span"):
+        if not it["price"]:
+            return f'<{tag} class="req">{esc(t(lang, "price_request"))}</{tag}>'
+        was = it.get("was_price")
+        old = (f' <s>{esc(t(lang, "was", p=fmt_price(was, lang)))}</s>' if was and was > it["price"] else "")
+        return f'{fmt_price(it["price"], lang)} <small>{esc(t(lang, "price_net"))}</small>{old}'
+
+    def sale_badge(self, it, lang):
+        was = it.get("was_price")
+        return f'<span class="sale">{esc(t(lang, "reduced"))}</span>' if was and it["price"] and was > it["price"] else ""
+
     def card(self, it, lang, cur, level=3, badge=False):
         s = self.s
         photo = it["images"][0] if it["images"] else ""
         im = (f'<img src="{img(medium(photo))}" alt="" width="510" height="383" loading="lazy" decoding="async">'
               if photo else '<span class="noimg"></span>')
         badge_html = f'<span class="badge">{esc(cap(s.type_noun(it, lang)))}</span>' if badge else ""
-        count = f'<span class="pics">{esc(t(lang, "photos", n=len(it["images"])))}</span>' if len(it["images"]) > 1 else ""
-        price = (f'{fmt_price(it["price"], lang)} <small>{esc(t(lang, "price_net"))}</small>' if it["price"]
-                 else f'<span class="req">{esc(t(lang, "price_request"))}</span>')
+        count = (f'<span class="pics">{icon("camera")}{len(it["images"])}</span>' if len(it["images"]) > 1 else "")
         hk = s.hinge_key(it["hinge"])[0] if it["hinge"] else ""
+        year = re.search(r"\d{4}", it["year"])
         text = " ".join([it["full"][lang], it["make"], it["model"], it["stock_no"], it["hinge"],
                          s.cat(it["cat"], "name", lang), str(it["id"])]).lower()
         data = (f'data-id="{it["id"]}" data-cat="{it["cat"]}" data-make="{esc(it["make"])}" '
-                f'data-price="{it["price"] or 0}" data-year="{(re.search(r"\d{4}", it["year"]) or [""])[0]}" '
+                f'data-price="{it["price"] or 0}" data-year="{year[0] if year else ""}" '
                 f'data-width="{it["width_mm"] or ""}" data-hinge="{esc(hk)}" data-rank="{it["rank"]}" '
                 f'data-text="{esc(text)}"')
         meta = s.card_meta(it, lang)
         return (f'<li class="card" {data}><a href="{rel(cur, it["path"][lang])}">'
-                f'<span class="card-img">{im}{badge_html}{count}</span>'
+                f'<span class="card-img">{im}{badge_html}{self.sale_badge(it, lang)}{count}</span>'
                 f'<span class="card-body"><h{level} class="card-title">{esc(it["card"][lang])}</h{level}>'
                 + (f'<span class="card-meta">{esc(meta)}</span>' if meta else "")
-                + f'<span class="card-price">{price}</span></span></a></li>')
+                + f'<span class="card-price">{self.price_html(it, lang)}</span>'
+                f'<span class="card-go">{esc(t(lang, "view_offer"))}{icon("arrow")}</span></span></a></li>')
+
+    def offer_card(self, it, lang, cur):
+        s = self.s
+        href = rel(cur, it["path"][lang])
+        facts = []
+        if it["year"]:
+            facts.append(("calendar", it["year"]))
+        if it["hours"]:
+            facts.append(("clock", s.spec_value(it, "Motor hours", lang)))
+        elif it["km"]:
+            facts.append(("gauge", s.spec_value(it, "KM", lang)))
+        if "Weight" in it["specs"]:
+            facts.append(("weight", s.spec_value(it, "Weight", lang)))
+        person = s.contact(it) or {}
+        phone = person.get("phone") or COMPANY["phone"]
+        who = f' aria-label="{esc(t(lang, "call"))} {esc(person["name"])}"' if person.get("name") else ""
+        return f"""<li class="offer">
+<a class="offer-img" href="{href}" tabindex="-1" aria-hidden="true"><img src="{img(medium(it["images"][0]))}" alt="" width="510" height="383" loading="lazy" decoding="async">{self.sale_badge(it, lang)}<span class="price-tag">{fmt_price(it["price"], lang)}</span></a>
+<div class="offer-body"><p class="offer-cat">{esc(cap(s.type_noun(it, lang)))}</p>
+<h3><a href="{href}">{esc(it["card"][lang])}</a></h3>
+<ul class="offer-facts">{"".join(f"<li>{icon(i)}{esc(v)}</li>" for i, v in facts)}</ul>
+<div class="offer-actions"><a class="btn btn-sm" href="{href}">{esc(t(lang, "view_offer"))}</a><a class="btn btn-sm btn-ghost" href="tel:{phone.replace(" ", "")}"{who}>{icon("phone")}{esc(t(lang, "call"))}</a></div>
+</div></li>"""
+
+    def slide(self, it, lang, cur, i):
+        s = self.s
+        return (f'<a class="slide" href="{rel(cur, it["path"][lang])}"' + (" hidden" if i else "") + ">"
+                f'<span class="slide-img"><img src="{img(it["images"][0])}" alt="{esc(it["full"][lang])}" width="800" height="600"'
+                + (' fetchpriority="high"' if i == 0 else ' loading="lazy"') + ' decoding="async">'
+                f'<span class="slide-tag">{esc(t(lang, "featured"))}</span>{self.sale_badge(it, lang)}</span>'
+                f'<span class="slide-body"><span class="slide-cat">{esc(cap(s.type_noun(it, lang)))}</span>'
+                f'<span class="slide-title">{esc(it["card"][lang])}</span>'
+                f'<span class="slide-meta">{esc(s.card_meta(it, lang))}</span>'
+                f'<span class="slide-foot"><span class="slide-price">{self.price_html(it, lang)}</span>'
+                f'<span class="slide-go">{esc(t(lang, "view_offer"))}{icon("arrow")}</span></span></span></a>')
+
+    def page_hero(self, crumbs, h1, intro="", meta="", chips="", photo=""):
+        style = f" style=\"--hero-img:url('{img(photo)}')\"" if photo else ""
+        return f"""<section class="page-hero"{style}><div class="wrap">
+{crumbs}
+<h1>{esc(h1)}</h1>
+{f'<p class="page-hero-p">{esc(intro)}</p>' if intro else ""}
+{f'<p class="page-hero-meta">{meta}</p>' if meta else ""}
+{f'<ul class="chips chips-dark">{chips}</ul>' if chips else ""}
+</div></section>"""
 
     def listing(self, lang, cur, items, cat_filter, level=2, badge=False):
         s = self.s
         items = sorted(items, key=lambda it: it["rank"])
         uid = slugify(cur)
         fields = [f'<div class="f f-q"><label for="q-{uid}">{esc(t(lang, "f_search"))}</label>'
-                  f'<input id="q-{uid}" type="search" name="q" autocomplete="off"></div>']
+                  f'<span class="f-search">{icon("search")}<input id="q-{uid}" type="search" name="q" autocomplete="off"></span></div>']
         if cat_filter:
             opts = []
             for g in GROUPS:
@@ -734,7 +877,7 @@ class Renderer:
         if len(makes) > 1:
             fields.append(f'<div class="f"><label for="m-{uid}">{esc(t(lang, "f_make"))}</label>'
                           f'<select id="m-{uid}" name="make"><option value="">{esc(t(lang, "f_all"))}</option>'
-                          + "".join(f'<option>{esc(m)}</option>' for m in makes) + "</select></div>")
+                          + "".join(f"<option>{esc(m)}</option>" for m in makes) + "</select></div>")
         hinges = {}
         for it in items:
             if it["hinge"]:
@@ -760,7 +903,7 @@ class Renderer:
             sorts.append(("width", "s_width"))
         fields.append(f'<div class="f"><label for="s-{uid}">{esc(t(lang, "f_sort"))}</label><select id="s-{uid}" name="sort">'
                       + "".join(f'<option value="{v}">{esc(t(lang, k))}</option>' for v, k in sorts) + "</select></div>")
-        fields.append(f'<button type="reset" class="btn-link">{esc(t(lang, "f_reset"))}</button>')
+        fields.append(f'<button type="reset" class="btn-link f-reset">{esc(t(lang, "f_reset"))}</button>')
         i18n = {"lang": lang, "results": list(T[lang]["results"])}
         cards = "".join(self.card(it, lang, cur, level, badge) for it in items)
         return f"""<div class="listing" data-listing data-i18n="{esc(json.dumps(i18n, ensure_ascii=False))}">
@@ -787,6 +930,10 @@ class Renderer:
                              for p in s.team],
         }
 
+    def role(self, person, lang):
+        role = person.get("role") or {}
+        return ROLES.get(role.get("en", ""), role).get(lang, "")
+
     # ---- pages
 
     def alts(self, fn):
@@ -796,46 +943,76 @@ class Renderer:
         s = self.s
         cur = s.home_path(lang)
         stock = s.page_path("stock", lang)
+        phone = COMPANY["phone"]
+        tel = "tel:" + phone.replace(" ", "")
+        counts = {g: sum(1 for it in s.items if it["group"] == g) for g in GROUPS}
         opts = "".join(
             f'<optgroup label="{esc(GROUPS[g]["name"][lang])}">' + "".join(
                 f'<option value="{c}">{esc(s.cat(c, "name", lang))}</option>' for c in s.cats_with_items if s.cat_group[c] == g)
             + "</optgroup>" for g in GROUPS if any(s.cat_group[c] == g for c in s.cats_with_items))
-        side = "".join(f'<img src="{img(s.photo(k))}" alt="" width="798" height="532" loading="lazy" decoding="async">'
-                       for k in HERO_SIDE)
-        groups_html = []
-        for g in GROUPS:
-            cids = [c for c in s.cats_with_items if s.cat_group[c] == g]
-            if not cids:
-                continue
+        by_size = lambda cids: sorted(cids, key=lambda c: -len(s.by_cat[c]))
+        quick = (by_size([c for c in s.cats_with_items if s.cat_group[c] != 2])[:2]
+                 + by_size([c for c in s.cats_with_items if s.cat_group[c] == 2])[:3])
+        popular = "".join(f'<li><a href="{rel(cur, s.cat_path(c, lang))}">{esc(s.cat(c, "name", lang))}</a></li>'
+                          for c in quick)
+        slides = s.featured[:5]
+        slides_html = "".join(self.slide(it, lang, cur, i) for i, it in enumerate(slides))
+        dots = "".join(f'<button type="button" class="dot" aria-label="{i + 1} / {len(slides)}"'
+                       + (' aria-current="true"' if i == 0 else "") + "></button>" for i in range(len(slides)))
+        trust = [("stack", t(lang, "trust1_t", n=len(s.items)), t(lang, "trust1_d")),
+                 ("camera", t(lang, "trust2_t"), t(lang, "trust2_d")),
+                 ("tag", t(lang, "trust3_t"), t(lang, "trust3_d")),
+                 ("globe", t(lang, "trust4_t"), t(lang, "trust4_d"))]
+        trust_html = "".join(f'<li data-reveal><span class="t-icon">{icon(i)}</span><span><strong>{esc(a)}</strong>'
+                             f'<small>{esc(b)}</small></span></li>' for i, a, b in trust)
+        groups = [g for g in GROUPS if any(s.cat_group[c] == g for c in s.cats_with_items)]
+        tabs = "".join(
+            f'<button type="button" role="tab" id="tab-{g}" aria-controls="panel-{g}" aria-selected="{"true" if i == 0 else "false"}"'
+            + (' tabindex="-1"' if i else "") + f'>{esc(GROUPS[g]["name"][lang])} <span>{counts[g]}</span></button>'
+            for i, g in enumerate(groups))
+        panels = []
+        for g in groups:
             tiles = []
-            for c in cids:
+            for c in [c for c in s.cats_with_items if s.cat_group[c] == g]:
                 rep = sorted(s.by_cat[c], key=lambda it: it["rank"])
                 photo = next((it["images"][0] for it in rep if it["images"]), "")
                 tiles.append(
-                    f'<li><a href="{rel(cur, s.cat_path(c, lang))}"><span class="tile-img">'
-                    f'<img src="{img(medium(photo))}" alt="" width="510" height="383" loading="lazy" decoding="async"></span>'
-                    f'<span class="tile-name">{esc(s.cat(c, "name", lang))}</span>'
-                    f'<span class="tile-n">{esc(t(lang, "count", n=len(s.by_cat[c])))}</span></a></li>')
-            n = sum(len(s.by_cat[c]) for c in cids)
-            groups_html.append(
-                f'<div class="cat-group"><h3><a href="{rel(cur, s.group_path(g, lang))}">{esc(GROUPS[g]["name"][lang])}</a>'
-                f' <span>{esc(t(lang, "count", n=n))}</span></h3><ul class="tiles">{"".join(tiles)}</ul></div>')
-        recent = sorted(s.items, key=lambda it: it["rank"])[:8]
-        tools_n = sum(1 for it in s.items if it["group"] == 2)
-        team = "".join(
-            f'<li><span class="p-name">{esc(p["name"])}</span> <span class="p-role">{esc(ROLES.get(p["role"]["en"], p["role"])[lang])}</span>'
+                    f'<li data-reveal><a class="tile" href="{rel(cur, s.cat_path(c, lang))}">'
+                    f'<img src="{img(medium(photo))}" alt="" width="510" height="383" loading="lazy" decoding="async">'
+                    f'<span class="tile-text"><span class="tile-name">{esc(s.cat(c, "name", lang))}</span>'
+                    f'<span class="tile-n">{esc(t(lang, "count", n=len(s.by_cat[c])))}</span></span></a></li>')
+            panels.append(
+                f'<div class="tab-panel" role="tabpanel" id="panel-{g}" aria-labelledby="tab-{g}">'
+                f'<h3 class="panel-h">{esc(GROUPS[g]["name"][lang])}</h3><ul class="tiles">{"".join(tiles)}</ul>'
+                f'<p class="panel-more"><a class="link-arrow" href="{rel(cur, s.group_path(g, lang))}">'
+                f'{esc(t(lang, "all_in", cat=GROUPS[g]["name"][lang]))}{icon("arrow")}</a></p></div>')
+        offers = "".join(self.offer_card(it, lang, cur) for it in s.featured)
+        talk = "".join(
+            f'<li><img src="{img(p["photo"])}" alt="" width="44" height="57" loading="lazy">'
+            f'<span><strong>{esc(p["name"])}</strong><small>{esc(self.role(p, lang))}</small></span>'
             f'<a href="tel:{p["phone"].replace(" ", "")}">{esc(p["phone"])}</a></li>' for p in s.team)
-        popular = {}
+        tools = sorted([it for it in s.items if it["group"] == 2], key=lambda it: it["rank"])[:4]
+        tools_html = "".join(
+            f'<li><a href="{rel(cur, it["path"][lang])}"><img src="{img(thumb(it["images"][0]))}" alt="" width="96" height="72" loading="lazy">'
+            f'<span><strong>{esc(it["card"][lang])}</strong><small>{self.price_html(it, lang)}</small></span>{icon("right")}</a></li>'
+            for it in tools if it["images"])
+        chip_counts = {}
         for it in s.items:
             if it["group"] == 2 and it["hinge"]:
                 k, label = s.hinge_key(it["hinge"])
                 if k != "SKIDSTEER":
-                    popular.setdefault(k, [label or it["hinge"], 0])[1] += 1
+                    chip_counts.setdefault(k, [label or it["hinge"], 0])[1] += 1
         chips = "".join(
             f'<li><a href="{rel(cur, s.group_path(2, lang))}?hinge={urllib.parse.quote(k)}">{esc(v[0])}</a></li>'
-            for k, v in sorted(popular.items(), key=lambda kv: -kv[1][1])[:8])
-        body = f"""<section class="hero"><div class="wrap hero-grid">
+            for k, v in sorted(chip_counts.items(), key=lambda kv: -kv[1][1])[:8])
+        about_people = "".join(
+            f'<li><span><strong>{esc(p["name"])}</strong><small>{esc(self.role(p, lang))}</small></span>'
+            f'<a href="tel:{p["phone"].replace(" ", "")}">{icon("phone")}{esc(p["phone"])}</a></li>' for p in s.team)
+        body = f"""<section class="hero">
+<div class="hero-bg" style="--hero-img:url('{img(HERO_BG)}')"></div>
+<div class="wrap hero-grid">
 <div class="hero-text">
+<p class="eyebrow">{esc(t(lang, "hero_eyebrow"))}</p>
 <h1>{esc(t(lang, "home_h1"))}</h1>
 <p class="lead">{esc(t(lang, "home_lead", n=len(s.items)))}</p>
 <form class="search" action="{rel(cur, stock)}" method="get" role="search">
@@ -843,54 +1020,85 @@ class Renderer:
 <select id="hero-c" name="c"><option value="">{esc(t(lang, "search_all"))}</option>{opts}</select>
 <label class="sr-only" for="hero-q">{esc(t(lang, "search_label"))}</label>
 <input id="hero-q" type="search" name="q" placeholder="{esc(t(lang, "search_ph"))}">
-<button class="btn" type="submit">{esc(t(lang, "search_btn"))}</button>
+<button class="btn" type="submit">{icon("search")}{esc(t(lang, "search_btn"))}</button>
 </form>
-<p class="hero-phone">{esc(t(lang, "office"))}: <a href="tel:{COMPANY["phone"].replace(" ", "")}">{COMPANY["phone"]}</a></p>
+<div class="popular"><span>{esc(t(lang, "popular"))}</span><ul>{popular}</ul></div>
 </div>
-<div class="hero-photos">
-<img src="{img(s.photo(HERO_MAIN))}" alt="" width="798" height="531" fetchpriority="high" decoding="async">
-<div class="hero-side">{side}</div>
+<div class="hero-feature" data-carousel data-labels="{esc(json.dumps([t(lang, "prev_offer"), t(lang, "next_offer")], ensure_ascii=False))}">
+<div class="slides">{slides_html}</div>
+<div class="slide-nav"><button type="button" class="round" data-prev aria-label="{esc(t(lang, "prev_offer"))}">{icon("left")}</button>
+<div class="dots">{dots}</div>
+<button type="button" class="round" data-next aria-label="{esc(t(lang, "next_offer"))}">{icon("right")}</button></div>
 </div>
 </div></section>
 
-<section class="section"><div class="wrap">
-<h2>{esc(t(lang, "browse"))}</h2>
-{"".join(groups_html)}
+<section class="trust"><div class="wrap"><ul class="trust-list">{trust_html}</ul></div></section>
+
+<section class="section paper"><div class="wrap">
+<div class="section-head" data-reveal><div><h2>{esc(t(lang, "browse"))}</h2><p>{esc(t(lang, "browse_p"))}</p></div></div>
+<div class="tabs" data-tabs>
+<div class="tab-list" role="tablist">{tabs}</div>
+{"".join(panels)}
+</div>
 </div></section>
 
-<section class="section alt"><div class="wrap">
-<div class="section-head"><h2>{esc(t(lang, "recent"))}</h2><a href="{rel(cur, stock)}">{esc(t(lang, "see_all"))}</a></div>
-<ul class="cards">{"".join(self.card(it, lang, cur, 3, badge=True) for it in recent)}</ul>
+<section class="section dark offers" id="offers"><div class="wrap">
+<div class="section-head" data-reveal><div><p class="eyebrow">{esc(t(lang, "offers_eyebrow"))}</p><h2>{esc(t(lang, "offers_h2"))}</h2>
+<p>{esc(t(lang, "offers_p"))}</p></div>
+<div class="scroll-nav"><button type="button" class="round" data-scroll="-1" aria-label="{esc(t(lang, "prev_offer"))}">{icon("left")}</button>
+<button type="button" class="round" data-scroll="1" aria-label="{esc(t(lang, "next_offer"))}">{icon("right")}</button></div></div>
+<div class="offers-grid">
+<div class="scroller" data-scroller><ul class="offer-list">{offers}</ul></div>
+<aside class="talk" data-reveal>
+<h3>{esc(t(lang, "talk_h3"))}</h3>
+<p>{esc(t(lang, "talk_p"))}</p>
+<ul class="talk-people">{talk}</ul>
+<a class="btn btn-block" href="{tel}">{icon("phone")}{esc(t(lang, "call_office"))} {phone}</a>
+</aside>
+</div>
+<p class="offers-all"><a class="link-arrow light" href="{rel(cur, stock)}">{esc(t(lang, "see_all"))}{icon("arrow")}</a></p>
 </div></section>
 
-<section class="section"><div class="wrap band">
-<img src="{img(s.photo(TOOLS_PHOTO))}" alt="" width="798" height="532" loading="lazy" decoding="async">
-<div>
+<section class="section"><div class="wrap tools-band">
+<div class="tools-photo" data-reveal><img src="{img(s.photo(TOOLS_PHOTO))}" alt="" width="798" height="532" loading="lazy" decoding="async"></div>
+<div data-reveal>
+<p class="eyebrow">{esc(t(lang, "tools_eyebrow"))}</p>
 <h2>{esc(t(lang, "tools_h2"))}</h2>
-<p>{esc(t(lang, "tools_p", n=tools_n))}</p>
+<p>{esc(t(lang, "tools_p", n=counts[2]))}</p>
 <ul class="chips">{chips}</ul>
-<p><a class="btn" href="{rel(cur, s.group_path(2, lang))}">{esc(t(lang, "tools_btn"))}</a></p>
+<h3 class="mini-h">{esc(t(lang, "tools_latest"))}</h3>
+<ul class="mini-list">{tools_html}</ul>
+<p><a class="btn" href="{rel(cur, s.group_path(2, lang))}">{esc(t(lang, "tools_btn"))}{icon("arrow")}</a></p>
 </div>
 </div></section>
 
-<section class="section alt"><div class="wrap about-band">
-<div>
+{self.cta_band(lang, cur)}
+
+<section class="section paper"><div class="wrap about-band">
+<div data-reveal>
+<p class="eyebrow">Trimen Tractors</p>
 <h2>{esc(t(lang, "about_h2"))}</h2>
 <p>{esc(t(lang, "about_p1"))}</p>
 <p>{esc(t(lang, "about_p2"))}</p>
-<p><a href="{rel(cur, s.page_path("about", lang))}">{esc(t(lang, "about_more"))}</a></p>
+<p><a class="link-arrow" href="{rel(cur, s.page_path("about", lang))}">{esc(t(lang, "about_more"))}{icon("arrow")}</a></p>
 </div>
-<div class="contact-box">
+<div class="contact-box" data-reveal>
 <h3>{esc(t(lang, "contact_h2"))}</h3>
-<p>{esc(t(lang, "office"))}: <a href="tel:{COMPANY["phone"].replace(" ", "")}">{COMPANY["phone"]}</a></p>
-<ul class="people">{team}</ul>
+<p class="office">{icon("pin")}<span>{esc(COMPANY["street"])}, {COMPANY["parish"]}, {COMPANY["municipality"]}</span></p>
+<a class="btn btn-block" href="{tel}">{icon("phone")}{esc(t(lang, "office"))}: {phone}</a>
+<ul class="people">{about_people}</ul>
 </div>
-<img class="yard" src="{img(s.photo(YARD_PHOTO))}" alt="" width="798" height="530" loading="lazy" decoding="async">
+<img class="yard" src="{img(s.photo(YARD_PHOTO))}" alt="" width="798" height="530" loading="lazy" decoding="async" data-reveal>
 </div></section>"""
         ld = [self.business_ld(), {"@context": "https://schema.org", "@type": "WebSite", "name": "Trimen Tractors",
                                    "url": s.abs(""), "inLanguage": LANGS}]
         self.write(lang, cur, t(lang, "home_title"), t(lang, "home_desc"), body, self.alts(s.home_path),
-                   active="home", ld=ld, page_class="home")
+                   active="home", ld=ld, page_class="home", cta=False)
+
+    def hero_photo(self, items):
+        it = next((x for x in sorted(items, key=lambda x: x["rank"]) if x["images"] and x["group"] != 2), None)
+        it = it or next((x for x in sorted(items, key=lambda x: x["rank"]) if x["images"]), None)
+        return it["images"][0] if it else ""
 
     def group(self, g, lang):
         s = self.s
@@ -900,12 +1108,13 @@ class Renderer:
         crumbs, crumb_ld = self.breadcrumbs(lang, cur, [(GROUPS[g]["name"][lang], cur)])
         chips = "".join(f'<li><a href="{rel(cur, s.cat_path(c, lang))}">{esc(s.cat(c, "name", lang))}'
                         f' <span>{len(s.by_cat[c])}</span></a></li>' for c in cids)
-        extra = (f'<p class="aside"><a href="https://www.vuwtc.com" rel="noopener">{esc(t(lang, "verachtert"))}</a></p>'
+        extra = (f'<p class="aside"><a class="link-arrow" href="https://www.vuwtc.com" rel="noopener">{esc(t(lang, "verachtert"))}{icon("arrow")}</a></p>'
                  if g == 2 else "")
-        body = f"""<div class="wrap page">
-{crumbs}
-<header class="page-head"><h1>{esc(GROUPS[g]["h1"][lang])}</h1><p>{esc(GROUPS[g]["intro"][lang])}</p></header>
-<ul class="chips">{chips}</ul>
+        photo = s.photo(TOOLS_PHOTO) if g == 2 else self.hero_photo(items)
+        hero = self.page_hero(crumbs, GROUPS[g]["h1"][lang], GROUPS[g]["intro"][lang],
+                              esc(t(lang, "count", n=len(items))), chips, photo)
+        body = f"""{hero}
+<div class="wrap page">
 {self.listing(lang, cur, items, cat_filter=True, level=2, badge=True)}
 {extra}
 </div>"""
@@ -913,7 +1122,8 @@ class Renderer:
         desc = t(lang, "cat_desc", h1=GROUPS[g]["h1"][lang], n=len(items),
                  makes=t(lang, "makes", list=", ".join(makes)) if makes else "")
         self.write(lang, cur, t(lang, "cat_title", h1=GROUPS[g]["h1"][lang]), desc, body,
-                   self.alts(lambda l: s.group_path(g, l)), active=("group", g), ld=[crumb_ld])
+                   self.alts(lambda l: s.group_path(g, l)), active=("group", g), ld=[crumb_ld],
+                   topic="t" if g == 2 else "m", page_class="listing-page")
 
     def category(self, cid, lang):
         s = self.s
@@ -928,31 +1138,34 @@ class Renderer:
             f'<li><a href="{rel(cur, s.cat_path(c, lang))}"' + (' aria-current="page"' if c == cid else "")
             + f'>{esc(s.cat(c, "name", lang))} <span>{len(s.by_cat[c])}</span></a></li>'
             for c in s.cats_with_items if s.cat_group[c] == g)
-        extra = (f'<p class="aside"><a href="https://www.vuwtc.com" rel="noopener">{esc(t(lang, "verachtert"))}</a></p>'
+        extra = (f'<p class="aside"><a class="link-arrow" href="https://www.vuwtc.com" rel="noopener">{esc(t(lang, "verachtert"))}{icon("arrow")}</a></p>'
                  if g == 2 else "")
-        body = f"""<div class="wrap page">
-{crumbs}
-<header class="page-head"><h1>{esc(h1)}</h1><p>{esc(intro)}</p></header>
-<ul class="chips">{siblings}</ul>
+        hero = self.page_hero(crumbs, h1, intro, esc(t(lang, "count", n=len(items))), siblings, self.hero_photo(items))
+        body = f"""{hero}
+<div class="wrap page">
 {self.listing(lang, cur, items, cat_filter=False, level=2)}
 {extra}
 </div>"""
         makes = sorted({it["make"] for it in items if it["make"]}, key=lambda m: -sum(1 for it in items if it["make"] == m))[:3]
         desc = t(lang, "cat_desc", h1=h1, n=len(items), makes=t(lang, "makes", list=", ".join(makes)) if makes else "")
         self.write(lang, cur, t(lang, "cat_title", h1=h1), desc, body, self.alts(lambda l: s.cat_path(cid, l)),
-                   active=("group", g), ld=[crumb_ld])
+                   active=("group", g), ld=[crumb_ld], topic="t" if g == 2 else "m", page_class="listing-page")
 
     def stock(self, lang):
         s = self.s
         cur = s.page_path("stock", lang)
         crumbs, crumb_ld = self.breadcrumbs(lang, cur, [(t(lang, "stock_h1"), cur)])
-        body = f"""<div class="wrap page">
-{crumbs}
-<header class="page-head"><h1>{esc(t(lang, "stock_h1"))}</h1></header>
+        chips = "".join(f'<li><a href="{rel(cur, s.group_path(g, lang))}">{esc(GROUPS[g]["name"][lang])}'
+                        f' <span>{sum(1 for it in s.items if it["group"] == g)}</span></a></li>' for g in GROUPS)
+        hero = self.page_hero(crumbs, t(lang, "stock_h1"), "", esc(t(lang, "count", n=len(s.items))), chips,
+                              s.photo(YARD_PHOTO))
+        body = f"""{hero}
+<div class="wrap page">
 {self.listing(lang, cur, s.items, cat_filter=True, level=2, badge=True)}
 </div>"""
         self.write(lang, cur, t(lang, "stock_title"), t(lang, "stock_desc", n=len(s.items)), body,
-                   self.alts(lambda l: s.page_path("stock", l)), active="stock", ld=[crumb_ld], page_class="stock")
+                   self.alts(lambda l: s.page_path("stock", l)), active="stock", ld=[crumb_ld],
+                   page_class="stock listing-page")
 
     def product(self, it, lang):
         s = self.s
@@ -971,70 +1184,86 @@ class Renderer:
                 + f'><img src="{img(thumb(u))}" alt="{esc(alt(i))}" width="96" height="72" loading="lazy" decoding="async"></a></li>'
                 for i, u in enumerate(imgs)) if len(imgs) > 1 else ""
             gallery = (f'<div class="gallery" data-gallery data-labels="{esc(json.dumps([t(lang, "prev"), t(lang, "next"), t(lang, "close")], ensure_ascii=False))}">'
-                       f'<a class="g-main" href="{img(imgs[0])}" data-i="0"><img src="{img(imgs[0])}" alt="{esc(alt(0))}" width="800" height="600" fetchpriority="high"></a>'
+                       f'<a class="g-main" href="{img(imgs[0])}" data-i="0"><img src="{img(imgs[0])}" alt="{esc(alt(0))}" width="800" height="600" fetchpriority="high">'
+                       f'{self.sale_badge(it, lang)}<span class="g-count">{icon("camera")}{len(imgs)}</span></a>'
                        + (f'<ul class="g-thumbs">{thumbs}</ul>' if thumbs else "") + "</div>")
-        price = (f'<p class="price">{fmt_price(it["price"], lang)} <span>{esc(t(lang, "price_net"))}</span></p>'
-                 + (f'<p class="gross">{esc(t(lang, "price_gross", p=fmt_price(it["gross"], lang)))}</p>' if it["gross"] else "")
-                 if it["price"] else f'<p class="price req">{esc(t(lang, "price_request"))}</p>')
-        facts = "".join(f"<div><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>" for k, v in s.key_facts(it, lang))
+        if it["price"]:
+            was = it.get("was_price")
+            price = (f'<div class="price-box">{icon("tag")}<div><p class="price">{fmt_price(it["price"], lang)} '
+                     f'<span>{esc(t(lang, "price_net"))}</span></p>'
+                     + (f'<p class="gross">{esc(t(lang, "price_gross", p=fmt_price(it["gross"], lang)))}</p>' if it["gross"] else "")
+                     + (f'<p class="was"><s>{esc(t(lang, "was", p=fmt_price(was, lang)))}</s></p>' if was and was > it["price"] else "")
+                     + "</div></div>")
+        else:
+            price = f'<div class="price-box">{icon("tag")}<div><p class="price req">{esc(t(lang, "price_request"))}</p></div></div>'
+        facts = "".join(f'<li>{icon(FACT_ICONS.get(k, "check"))}<span><small>{esc(label)}</small><strong>{esc(v)}</strong></span></li>'
+                        for k, label, v in s.key_facts(it, lang))
         person = s.contact(it)
         url = s.abs(cur)
         if person:
             subject = t(lang, "enquiry_subject", title=title, id=it["id"])
             bodytxt = t(lang, "enquiry_body", title=title, url=url)
             mail = f'mailto:{person["email"]}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(bodytxt)}'
-            role = ROLES.get(person.get("role", {}).get("en", ""), person.get("role") or {}).get(lang, "")
+            tel = "tel:" + person["phone"].replace(" ", "")
             speaks = ", ".join(SPEAKS[lang][x] for x in person.get("speaks", []) if x in SPEAKS[lang])
-            photo = (f'<img src="{img(person["photo"])}" alt="" width="64" height="83">'
-                     if person.get("photo") else "")
-            contact = f"""<div class="person">{photo}<div>
-<p class="p-label">{esc(t(lang, "contact_person"))}</p>
+            photo = f'<img src="{img(person["photo"])}" alt="" width="64" height="83">' if person.get("photo") else ""
+            contact = f"""<p class="cc-title">{esc(t(lang, "interested"))}</p>
+<div class="person">{photo}<div>
 <p class="p-name">{esc(person["name"])}</p>
-<p class="p-role">{esc(role)}{(" · " + esc(t(lang, "speaks")) + ": " + esc(speaks)) if speaks else ""}</p>
-<p class="p-links"><a href="tel:{person["phone"].replace(" ", "")}">{esc(person["phone"])}</a><br><a href="mailto:{esc(person["email"])}">{esc(person["email"])}</a></p>
+<p class="p-role">{esc(self.role(person, lang))}</p>
+{f'<p class="p-speaks">{icon("globe")}{esc(speaks)}</p>' if speaks else ""}
 </div></div>
-<div class="actions"><a class="btn" href="tel:{person["phone"].replace(" ", "")}">{esc(t(lang, "call"))}</a><a class="btn btn-alt" href="{esc(mail)}">{esc(t(lang, "send_email"))}</a></div>"""
+<div class="actions"><a class="btn btn-lg" href="{tel}">{icon("phone")}{esc(person["phone"])}</a>
+<a class="btn btn-light btn-lg" href="{esc(mail)}">{icon("mail")}{esc(t(lang, "send_email"))}</a></div>"""
         else:
-            contact = (f'<div class="actions"><a class="btn" href="tel:{COMPANY["phone"].replace(" ", "")}">'
-                       f'{esc(t(lang, "call"))} {COMPANY["phone"]}</a></div>')
+            tel, mail = "tel:" + COMPANY["phone"].replace(" ", ""), ""
+            contact = (f'<p class="cc-title">{esc(t(lang, "interested"))}</p><div class="actions">'
+                       f'<a class="btn btn-lg" href="{tel}">{icon("phone")}{COMPANY["phone"]}</a></div>')
+        mobile = (f'<div class="mobile-cta"><a class="btn" href="{tel}">{icon("phone")}{esc(t(lang, "call"))}</a>'
+                  + (f'<a class="btn btn-light" href="{esc(mail)}">{icon("mail")}{esc(t(lang, "send_email"))}</a>' if mail else "")
+                  + "</div>")
         desc_text = s.describe(it, lang)
         notes = it["notes"][lang]
         notes_html = "".join(f"<p>{'<br>'.join(esc(l) for l in para.splitlines())}</p>"
                              for para in re.split(r"\n\s*\n", notes) if para.strip()) if notes else ""
         rows = "".join(f'<tr><th scope="row">{esc(k)}</th><td>{esc(v)}</td></tr>' for k, v in s.spec_rows(it, lang))
         related = [x for x in sorted(s.by_cat[cid], key=lambda x: x["rank"]) if x["id"] != it["id"]][:4]
+        if len(related) < 4:
+            related += [x for x in sorted(s.items, key=lambda x: x["rank"])
+                        if x["group"] == g and x["id"] != it["id"] and x not in related][:4 - len(related)]
         related_html = ""
         if related:
-            related_html = (f'<section class="related"><div class="section-head"><h2>{esc(t(lang, "more_in", cat=s.cat(cid, "name", lang)))}</h2>'
-                            f'<a href="{rel(cur, s.cat_path(cid, lang))}">{esc(t(lang, "all_in", cat=s.cat(cid, "name", lang)))}</a></div>'
-                            f'<ul class="cards">{"".join(self.card(x, lang, cur, 3) for x in related)}</ul></section>')
+            related_html = (f'<section class="section paper related"><div class="wrap">'
+                            f'<div class="section-head"><h2>{esc(t(lang, "more_in", cat=s.cat(cid, "name", lang)))}</h2>'
+                            f'<a class="link-arrow" href="{rel(cur, s.cat_path(cid, lang))}">{esc(t(lang, "all_in", cat=s.cat(cid, "name", lang)))}{icon("arrow")}</a></div>'
+                            f'<ul class="cards">{"".join(self.card(x, lang, cur, 3, badge=x["cat"] != cid) for x in related)}</ul></div></section>')
         sub = s.card_meta(it, lang)
         maps = f'https://www.google.com/maps?q={COMPANY["lat"]},{COMPANY["lng"]}'
-        body = f"""<div class="wrap page">
+        body = f"""<div class="product-bg"><div class="wrap page">
 {crumbs}
 <article class="product">
 <div class="product-top">
 {gallery}
-<div class="product-info">
+<aside class="product-info">
 <p class="eyebrow"><a href="{rel(cur, s.cat_path(cid, lang))}">{esc(s.cat(cid, "name", lang))}</a></p>
 <h1>{esc(title)}</h1>
 {f'<p class="sub">{esc(sub)}</p>' if sub else ""}
-<div class="price-box">{price}</div>
-{f'<dl class="facts">{facts}</dl>' if facts else ""}
+{price}
+{f'<ul class="facts">{facts}</ul>' if facts else ""}
 <div class="contact-card">{contact}</div>
-<p class="listing-id">{esc(t(lang, "listing_id"))}: {it["id"]} · <button type="button" class="btn-link" data-print>{esc(t(lang, "print"))}</button></p>
-</div>
+<p class="listing-id">{esc(t(lang, "listing_id"))}: {it["id"]} <button type="button" class="btn-link" data-print>{icon("print")}{esc(t(lang, "print"))}</button></p>
+</aside>
 </div>
 <div class="product-body">
 <section class="desc"><h2>{esc(t(lang, "description"))}</h2><p>{esc(desc_text)}</p>{notes_html}</section>
 <section class="spec"><h2>{esc(t(lang, "specs"))}</h2><table class="specs">{rows}</table></section>
 <section class="seller"><h2>{esc(t(lang, "seller"))}</h2>
-<p><strong>{COMPANY["legal"]}</strong><br>{esc(COMPANY["street"])}, {COMPANY["parish"]}, {COMPANY["municipality"]}, {COMPANY["postcode"]}, {COUNTRY[lang]}<br>
-<a href="tel:{COMPANY["phone"].replace(" ", "")}">{COMPANY["phone"]}</a> · <a href="{maps}" rel="noopener">{esc(t(lang, "open_map"))}</a></p></section>
+<p>{icon("pin")}<span><strong>{COMPANY["legal"]}</strong><br>{esc(COMPANY["street"])}, {COMPANY["parish"]}, {COMPANY["municipality"]}, {COMPANY["postcode"]}, {COUNTRY[lang]}<br>
+<a href="tel:{COMPANY["phone"].replace(" ", "")}">{COMPANY["phone"]}</a> · <a href="{maps}" rel="noopener">{esc(t(lang, "open_map"))}</a></span></p></section>
 </div>
 </article>
-{related_html}
-</div>"""
+</div></div>
+{related_html}"""
         ld = {"@context": "https://schema.org", "@type": "Product", "name": title, "sku": str(it["id"]),
               "url": url, "category": s.cat(cid, "name", lang),
               "description": (desc_text + (" " + " ".join(notes.split()) if notes else ""))[:600],
@@ -1057,48 +1286,49 @@ class Renderer:
             ld["offers"] = offer
         self.write(lang, cur, f"{title} | Trimen Tractors", s.meta_description(it, lang), body,
                    self.alts(lambda l: it["path"][l]), active=("group", g), og_type="product",
-                   og_image=img(imgs[0]) if imgs else None, ld=[ld, crumb_ld], page_class="product-page")
+                   og_image=img(imgs[0]) if imgs else None, ld=[ld, crumb_ld], page_class="product-page",
+                   topic="t" if g == 2 else "m", extra=mobile)
 
     def about(self, lang):
         s = self.s
         cur = s.page_path("about", lang)
         crumbs, crumb_ld = self.breadcrumbs(lang, cur, [(t(lang, "nav_about"), cur)])
-        paras = "".join(f"<p>{esc(p)}</p>" for p in t(lang, "about_page"))
+        paras = "".join(f"<p>{esc(p)}</p>" for p in t(lang, "about_page")[1:])
         people = []
         for p in s.team:
-            role = ROLES.get(p["role"]["en"], p["role"])[lang]
             speaks = ", ".join(SPEAKS[lang][x] for x in p["speaks"] if x in SPEAKS[lang])
-            people.append(f"""<li class="member">
+            people.append(f"""<li class="member" data-reveal>
 <img src="{img(p["photo"])}" alt="{esc(p["name"])}" width="100" height="129" loading="lazy">
-<div><h3>{esc(p["name"])}</h3><p class="p-role">{esc(role)}</p>
-<p><a href="tel:{p["phone"].replace(" ", "")}">{esc(p["phone"])}</a><br><a href="mailto:{esc(p["email"])}">{esc(p["email"])}</a></p>
-<p class="p-speaks">{esc(t(lang, "speaks"))}: {esc(speaks)}</p></div></li>""")
+<div><h3>{esc(p["name"])}</h3><p class="p-role">{esc(self.role(p, lang))}</p>
+<p class="m-links"><a href="tel:{p["phone"].replace(" ", "")}">{icon("phone")}{esc(p["phone"])}</a>
+<a href="mailto:{esc(p["email"])}">{icon("mail")}{esc(p["email"])}</a></p>
+<p class="p-speaks">{icon("globe")}{esc(speaks)}</p></div></li>""")
         banks = "".join(f"<div><dt>{esc(t(lang, 'bank'))}</dt><dd>{esc(b)}, SWIFT {sw}<br>{iban}</dd></div>"
                         for b, sw, iban in COMPANY["banks"])
         photos = "".join(f'<li><a href="{img(u)}" data-i="{i}"><img src="{img(u)}" alt="" width="798" height="532" loading="lazy" decoding="async"></a></li>'
                          for i, u in enumerate(s.photo(k) for k in ABOUT_GALLERY))
         maps = f'https://www.google.com/maps?q={COMPANY["lat"]},{COMPANY["lng"]}'
-        body = f"""<div class="wrap page">
-{crumbs}
+        hero = self.page_hero(crumbs, t(lang, "about_h1"), t(lang, "about_page")[0], "", "", s.photo(ABOUT_PHOTO))
+        body = f"""{hero}
+<div class="wrap page about">
 <div class="about-top">
-<div><h1>{esc(t(lang, "about_h1"))}</h1>{paras}</div>
-<img src="{img(s.photo(ABOUT_PHOTO))}" alt="" width="798" height="530" decoding="async">
+<div data-reveal>{paras}</div>
+<img src="{img(s.photo(HERO_MAIN))}" alt="" width="798" height="531" decoding="async" data-reveal>
 </div>
-<section id="contact" class="about-contact">
-<div>
+<section id="contact" class="about-contact" data-reveal>
+<div class="contact-panel">
 <h2>{esc(t(lang, "contact_h2"))}</h2>
-<dl class="facts">
-<div><dt>{esc(t(lang, "address"))}</dt><dd>{COMPANY["legal"]}<br>{esc(COMPANY["street"])}<br>{COMPANY["parish"]}, {COMPANY["municipality"]}<br>{COMPANY["postcode"]}, {COUNTRY[lang]}</dd></div>
-<div><dt>{esc(t(lang, "office"))}</dt><dd><a href="tel:{COMPANY["phone"].replace(" ", "")}">{COMPANY["phone"]}</a></dd></div>
-</dl>
-<p><a href="{maps}" rel="noopener">{esc(t(lang, "open_map"))}</a></p>
+<p class="office">{icon("pin")}<span>{COMPANY["legal"]}<br>{esc(COMPANY["street"])}<br>{COMPANY["parish"]}, {COMPANY["municipality"]}<br>{COMPANY["postcode"]}, {COUNTRY[lang]}</span></p>
+<a class="btn btn-block btn-lg" href="tel:{COMPANY["phone"].replace(" ", "")}">{icon("phone")}{esc(t(lang, "office"))}: {COMPANY["phone"]}</a>
+<a class="btn btn-light btn-block" href="#contact" data-request>{icon("mail")}{esc(t(lang, "cta_btn"))}</a>
+<p><a class="link-arrow light" href="{maps}" rel="noopener">{esc(t(lang, "open_map"))}{icon("arrow")}</a></p>
 </div>
 <iframe class="map" title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
  src="https://maps.google.com/maps?q={COMPANY["lat"]},{COMPANY["lng"]}&amp;z=12&amp;hl={lang}&amp;output=embed"></iframe>
 </section>
 <section><h2>{esc(t(lang, "team_h2"))}</h2><ul class="team">{"".join(people)}</ul></section>
 <section><h2>{esc(t(lang, "company_h2"))}</h2>
-<dl class="facts company">
+<dl class="company">
 <div><dt>{esc(t(lang, "company"))}</dt><dd>{COMPANY["legal"]}</dd></div>
 <div><dt>{esc(t(lang, "reg_no"))}</dt><dd>{COMPANY["reg"]}</dd></div>
 <div><dt>{esc(t(lang, "vat_no"))}</dt><dd>{COMPANY["vat"]}</dd></div>
@@ -1107,7 +1337,8 @@ class Renderer:
 <section><h2>{esc(t(lang, "gallery_h2"))}</h2><ul class="photos" data-photos data-labels="{esc(json.dumps([t(lang, "prev"), t(lang, "next"), t(lang, "close")], ensure_ascii=False))}">{photos}</ul></section>
 </div>"""
         self.write(lang, cur, t(lang, "about_title"), t(lang, "about_desc"), body,
-                   self.alts(lambda l: s.page_path("about", l)), active="about", ld=[self.business_ld(), crumb_ld])
+                   self.alts(lambda l: s.page_path("about", l)), active="about", ld=[self.business_ld(), crumb_ld],
+                   page_class="about-page")
 
     # ---- site-level files
 
